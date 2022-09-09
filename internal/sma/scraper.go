@@ -99,11 +99,11 @@ func (s *Scraper) run(ctx context.Context) {
 					continue
 				}
 
-				logger.Debug().Str("metric", name).Float64("value", value).Msg("Read metric")
+				logger.Trace().Str("metric", name).Float64("value", value).Msg("Read metric")
 				msg[name] = value
 			}
 
-			logger.Info().Interface("msg", msg).Msg("Scraped SMA inverter")
+			logger.Debug().Interface("msg", msg).Msg("Scraped SMA inverter")
 			yaml, err := yaml.Marshal(msg)
 			if err != nil {
 				logger.Error().Err(err).Msg("Failed to marshal message")
@@ -123,6 +123,7 @@ func (s *Scraper) readMetric(ctx context.Context, client modbus.Client, name str
 	}
 
 	logger.Trace().Uint16("address", metric.Modbus.Address).Str("metric", name).Bytes("value", value).Msg("Received SMA data")
+
 	v := float64(binary.BigEndian.Uint32(value)) / float64(metric.Modbus.Scale)
 	if v < metric.Modbus.Min || v > metric.Modbus.Max {
 		return 0, fmt.Errorf("value %.2f out of range (%.2f,%.2f)", v, metric.Modbus.Min, metric.Modbus.Max)
