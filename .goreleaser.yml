@@ -1,0 +1,71 @@
+project_name: sma-monitor
+release:
+  github:
+    owner: hierynomus
+    name: sma-monitor
+  name_template: '{{.Tag}}'
+before:
+  hooks:
+    - go mod download
+builds:
+- id: sma-monitor
+  goos:
+  - linux
+  goarch:
+  - amd64
+  - arm64
+  goarm:
+  - "6"
+  targets:
+  - linux_amd64
+  - linux_arm64
+  main: .
+  ldflags:
+  - -s -w -X github.com/hierynomus/sma-monitor/version.Version={{.Version}}
+    -X github.com/hierynomus/sma-monitor/version.Commit={{.Commit}}
+    -X github.com/hierynomus/sma-monitor/version.BuildDate={{.Date}}
+  binary: sma-monitor
+  env:
+  - CGO_ENABLED=0
+  - GO111MODULE=on
+dockers:
+- image_templates:
+  - "ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-x86_64"
+  ids:
+    - sma-monitor
+  use: buildx
+  dockerfile: docker/Dockerfile.goreleaser
+  build_flag_templates:
+  - "--platform=linux/amd64"
+  - --label=org.opencontainers.image.title={{ .ProjectName }}
+  - --label=org.opencontainers.image.description={{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/hierynomus/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/hierynomus/{{ .ProjectName }}
+  - --label=org.opencontainers.image.version={{ .Version }}
+  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+  - --label=org.opencontainers.image.revision={{ .FullCommit }}
+- image_templates:
+  - "ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+  ids:
+    - sma-monitor
+  use: buildx
+  goarch: arm64
+  dockerfile: docker/Dockerfile.goreleaser
+  build_flag_templates:
+  - "--platform=linux/arm64/v8"
+  - --label=org.opencontainers.image.title={{ .ProjectName }}
+  - --label=org.opencontainers.image.description={{ .ProjectName }}
+  - --label=org.opencontainers.image.url=https://github.com/hierynomus/{{ .ProjectName }}
+  - --label=org.opencontainers.image.source=https://github.com/hierynomus/{{ .ProjectName }}
+  - --label=org.opencontainers.image.version={{ .Version }}
+  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+  - --label=org.opencontainers.image.revision={{ .FullCommit }}
+docker_manifests:
+- name_template: ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}
+  image_templates:
+  - ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-x86_64
+  - ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-arm64v8
+- name_template: ghcr.io/hierynomus/{{ .ProjectName }}:latest
+  image_templates:
+  - ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-x86_64
+  - ghcr.io/hierynomus/{{ .ProjectName }}:{{ .Version }}-arm64v8

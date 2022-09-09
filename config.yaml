@@ -1,0 +1,219 @@
+modbus:
+  scrape-interval: 15s
+  address: zonnepanelen
+  port: 502
+  device-address: 3
+  timeoout: 5s
+  metrics:
+    Metering_DyWhOut:
+      name: pv_energy_today_kwh
+      type: gauge
+      description: "PV energy today"
+      unit: kWh
+      modbus:
+        address: 30535
+        scale: 1000
+        max: 100.0
+    Metering_TotWhOut:
+      name: pv_energy_total_kwh
+      type: gauge
+      description: "PV energy total"
+      unit: kWh
+      modbus:
+        address: 30529
+        scale: 1000
+        max: 400000.0
+    DcMs_Watt_1:
+      name: pv_dc_power_active_kw
+      type: gauge
+      description: "PV DC power active"
+      unit: kW
+      labels:
+        string: 1
+      modbus:
+        address: 30773
+        scale: 1
+        max: 4000
+    DcMs.Watt_2:
+      name: pv_dc_power_active_kw
+      type: gauge
+      description: "PV DC power active"
+      unit: kW
+      labels:
+        string: 2
+      modbus:
+        address: 30961
+        scale: 1
+        max: 4000
+    DcMs_Vol_1:
+      name: pv_dc_voltage_active_v
+      type: gauge
+      description: "PV DC voltage active"
+      unit: V
+      labels:
+        string: 1
+      modbus:
+        address: 30771
+        scale: 100
+        max: 1000
+    DcMs_Vol_2:
+      name: pv_dc_voltage_active_v
+      type: gauge
+      description: "PV DC voltage active"
+      unit: V
+      labels:
+        string: 2
+      modbus:
+        address: 30959
+        scale: 100
+        max: 1000
+    DcMs_Amp_1:
+      name: pv_dc_current_active_a
+      type: gauge
+      description: "PV DC current active"
+      unit: A
+      labels:
+        string: 1
+      modbus:
+        address: 30769
+        scale: 1000
+        max: 100
+    DcMs_Amp_2:
+      name: pv_dc_current_active_a
+      type: gauge
+      description: "PV DC current active"
+      unit: A
+      labels:
+        string: 2
+      modbus:
+        address: 30957
+        scale: 1000
+        max: 100
+    GridMs_TotW:
+      name: pv_ac_power_active_total_kw
+      type: gauge
+      description: "PV AC current active"
+      unit: kW
+      modbus:
+        address: 30775
+        scale: 1
+        max: 1000
+    GridMs_W_phsA:
+      name: pv_ac_power_active_kw
+      type: gauge
+      description: "PV AC current active"
+      unit: kW
+      labels:
+        phase: L1
+      modbus:
+        address: 30777
+        scale: 1
+        max: 1000
+    GridMs_W_phsB:
+      name: pv_ac_power_active_kw
+      type: gauge
+      description: "PV AC current active"
+      unit: kW
+      labels:
+        phase: L2
+      modbus:
+        address: 30779
+        scale: 1
+        max: 1000
+    GridMs_W_phsC:
+      name: pv_ac_power_active_kw
+      type: gauge
+      description: "PV AC current active"
+      unit: kW
+      labels:
+        phase: L3
+      modbus:
+        address: 30781
+        scale: 1
+        max: 1000
+    GridMs_PhV_phsA:
+      name: pv_ac_voltage_active_v
+      type: gauge
+      description: "PV AC voltage active"
+      unit: V
+      labels:
+        phase: L1
+      modbus:
+        address: 30783
+        scale: 100
+        max: 500
+    GridMs_PhV_phsB:
+      name: pv_ac_voltage_active_v
+      type: gauge
+      description: "PV AC voltage active"
+      unit: V
+      labels:
+        phase: L2
+      modbus:
+        address: 30785
+        scale: 100
+        max: 500
+    GridMs_PhV_phsC:
+      name: pv_ac_voltage_active_v
+      type: gauge
+      description: "PV AC voltage active"
+      unit: V
+      labels:
+        phase: L3
+      modbus:
+        address: 30787
+        scale: 100
+        max: 500
+    GridMs_TotA:
+      name: pv_ac_current_active_total_a
+      type: gauge
+      description: "PV AC current active total"
+      unit: A
+      modbus:
+        address: 30795
+        scale: 1000
+        max: 100
+    GridMs_A_phsA:
+      name: pv_ac_current_active_a
+      type: gauge
+      description: "PV AC current active"
+      unit: A
+      labels:
+        phase: L1
+      modbus:
+        address: 30977
+        scale: 1000
+        max: 100
+    GridMs_A_phsB:
+      name: pv_ac_current_active_a
+      type: gauge
+      description: "PV AC current active"
+      unit: A
+      labels:
+        phase: L2
+      modbus:
+        address: 30979
+        scale: 1000
+        max: 100
+    GridMs_A_phsC:
+      name: pv_ac_current_active_a
+      type: gauge
+      description: "PV AC current active"
+      unit: A
+      labels:
+        phase: L3
+      modbus:
+        address: 30981
+        scale: 1000
+        max: 100
+    GridMs_Hz:
+      name: pv_ac_frequency_hz
+      type: gauge
+      description: "PV AC frequency"
+      unit: Hz
+      modbus:
+        address: 30803
+        scale: 100
+        max: 100
+http:
+  listen-address: ":8082"
