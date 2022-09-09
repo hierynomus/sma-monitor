@@ -21,9 +21,9 @@ func buildMetrics(cfg *config.Config) map[string]iot.MetricCollector {
 	metrics := map[string]iot.MetricCollector{}
 	for n, metric := range cfg.Modbus.Metrics {
 		if metric.Type == "gauge" {
-			metrics[n] = iot.NewGaugeL(cfg.Modbus.Namespace, metric.Name, metric.Help, metric.Labels)
+			metrics[n] = iot.NewGaugeL(cfg.Modbus.Namespace, metric.Name, metric.Description, metric.Labels)
 		} else if metric.Type == "counter" {
-			metrics[n] = iot.NewCounterL(cfg.Modbus.Namespace, metric.Name, metric.Help, metric.Labels)
+			metrics[n] = iot.NewCounterL(cfg.Modbus.Namespace, metric.Name, metric.Description, metric.Labels)
 		}
 	}
 

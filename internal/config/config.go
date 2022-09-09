@@ -36,9 +36,8 @@ type Metric struct {
 	Name string `yaml:"name"`
 	Unit string `yaml:"unit"`
 	// Type is one of: gauge, counter, histogram, summary
-	Type string `yaml:"type"`
-	// Help is the description of the metric
-	Help string `yaml:"help"`
+	Type        string `yaml:"type"`
+	Description string `yaml:"description"`
 	// Labels are the labels of the metric
 	Labels map[string]string `yaml:"labels"`
 	Modbus ModBusMetric      `yaml:"modbus"`
