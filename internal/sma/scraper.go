@@ -11,6 +11,7 @@ import (
 	"github.com/hierynomus/iot-monitor/pkg/iot"
 	"github.com/hierynomus/iot-monitor/pkg/logging"
 	"github.com/hierynomus/sma-monitor/internal/config"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -19,6 +20,7 @@ var _ iot.Scraper = (*Scraper)(nil)
 
 type Scraper struct {
 	ctx     context.Context
+	logger  zerolog.Logger
 	cancel  context.CancelFunc
 	handler *modbus.TCPClientHandler
 	wg      sync.WaitGroup
@@ -35,14 +37,11 @@ func NewScraper(ctx context.Context, cfg *config.Config) (*Scraper, error) {
 	handler.SlaveID = byte(cfg.Modbus.DeviceAddress)
 	handler.Logger = &logger
 
-	if err := handler.Connect(); err != nil {
-		return nil, err
-	}
-
 	ctx, cancel := context.WithCancel(ctx)
 
 	return &Scraper{
 		ctx:     ctx,
+		logger:  logging.LoggerFor(ctx, "sma-scraper"),
 		cancel:  cancel,
 		handler: handler,
 		ch:      make(chan iot.RawMessage),
@@ -74,44 +73,63 @@ func (s *Scraper) Start(ctx context.Context) error {
 }
 
 func (s *Scraper) run(ctx context.Context) {
-	logger := logging.LoggerFor(ctx, "sma-scraper")
-	ctx = logger.WithContext(ctx)
+	ctx = s.logger.WithContext(ctx)
 
 	defer s.wg.Done()
 	defer close(s.ch)
-	defer s.handler.Close()
-
-	client := modbus.NewClient(s.handler)
 
 	for {
 		select {
 		case <-s.ctx.Done():
-			logger.Info().Msg("Stopping scraper")
+			s.logger.Info().Msg("Stopping scraper")
 
 			return
 		case <-s.ticker.C:
-			logger.Debug().Msg("Scraping SMA inverter")
-			msg := map[string]float64{}
-			for name, metric := range s.cfg.Metrics {
-				value, err := s.readMetric(ctx, client, name, metric)
-				if err != nil {
-					logger.Error().Str("metric", name).Err(err).Msg("Failed to read metric")
-					continue
-				}
+			s.logger.Debug().Msg("Scraping SMA inverter")
 
-				logger.Trace().Str("metric", name).Float64("value", value).Msg("Read metric")
-				msg[name] = value
-			}
-
-			logger.Debug().Interface("msg", msg).Msg("Scraped SMA inverter")
-			yaml, err := yaml.Marshal(msg)
+			msg, err := s.scrape(ctx)
 			if err != nil {
-				logger.Error().Err(err).Msg("Failed to marshal message")
+				s.logger.Error().Err(err).Msg("Failed to scrape SMA inverter")
 				continue
 			}
+
+			s.logger.Debug().Interface("msg", msg).Msg("Scraped SMA inverter")
+
+			yaml, err := yaml.Marshal(msg)
+			if err != nil {
+				s.logger.Error().Err(err).Msg("Failed to marshal message")
+				continue
+			}
+
 			s.ch <- iot.RawMessage(yaml)
 		}
 	}
+}
+
+func (s *Scraper) scrape(ctx context.Context) (map[string]float64, error) {
+	logger := logging.LoggerFor(ctx, "sma-scraper")
+
+	if err := s.handler.Connect(); err != nil {
+		return nil, err
+	}
+
+	defer s.handler.Close()
+
+	client := modbus.NewClient(s.handler)
+
+	msg := map[string]float64{}
+	for name, metric := range s.cfg.Metrics {
+		value, err := s.readMetric(ctx, client, name, metric)
+		if err != nil {
+			logger.Error().Str("metric", name).Err(err).Msg("Failed to read metric")
+			continue
+		}
+
+		logger.Trace().Str("metric", name).Float64("value", value).Msg("Read metric")
+		msg[name] = value
+	}
+
+	return msg, nil
 }
 
 func (s *Scraper) readMetric(ctx context.Context, client modbus.Client, name string, metric config.Metric) (float64, error) {

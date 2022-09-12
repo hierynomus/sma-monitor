@@ -4,6 +4,7 @@ modbus:
   port: 502
   device-address: 3
   timeoout: 5s
+  namespace: sma
   metrics:
     Metering_DyWhOut:
       name: pv_energy_today_kwh
